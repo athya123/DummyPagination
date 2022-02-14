@@ -7,15 +7,26 @@ import android.view.animation.AnimationUtils
 import android.webkit.WebView
 import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
-import com.google.android.gms.ads.*
+import androidx.recyclerview.widget.PagerSnapHelper
+import androidx.recyclerview.widget.RecyclerView
+import autodispose2.AutoDispose.autoDisposable
+import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider
 import com.tare.newsapp.R
+import com.tare.newsapp.adapter.NewsAdapter
 import com.tare.newsapp.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
+
     private val homeViewModel: HomeViewModel by viewModels()
     private lateinit var webView: WebView
+    private lateinit var recyclerView: RecyclerView
+    private val adapter = NewsAdapter()
+    private val disposables = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,13 +37,15 @@ class HomeActivity : AppCompatActivity() {
             lifecycleOwner = this@HomeActivity
         }
         webView = binding.webView
-        val country = resources.configuration.locales[0].country
-        homeViewModel.fetchNews(country)
-        MobileAds.setRequestConfiguration(
-            RequestConfiguration.Builder()
-                .setTestDeviceIds(listOf("97015A542488682AEC52D8A701AA2C23")).build()
-        )
-        MobileAds.initialize(applicationContext)
+        recyclerView = binding.recyclerView
+        recyclerView.adapter = adapter
+        adapter.viewModel = homeViewModel
+        val snapHelper = PagerSnapHelper()
+        snapHelper.attachToRecyclerView(recyclerView)
+    }
+
+    override fun onStart() {
+        super.onStart()
         subscribeObservers()
     }
 
@@ -51,20 +64,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun subscribeObservers() {
-        homeViewModel.adStatus.observe(this) {
-            if (it == true) {
-                homeViewModel.adLoader.observe(this) { adLoader ->
-                    if (!adLoader.isLoading) {
-                        homeViewModel.initAds()
-                    }
-                }
-            }
-        }
-        homeViewModel.adList.observe(this) {
-            homeViewModel.mixLists()
-        }
-        homeViewModel.newsList.observe(this) {
-            homeViewModel.mixLists()
-        }
+        homeViewModel.flowable.to(autoDisposable(AndroidLifecycleScopeProvider.from(this)))
+            .subscribe { adapter.submitData(lifecycle, it) }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        disposables.dispose()
     }
 }

@@ -15,34 +15,33 @@
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_10sdp"
-        android:layout_marginTop="@dimen/_10sdp"
-        android:layout_marginEnd="@dimen/_10sdp"
-        android:onClick="@{() -> viewModel.onClickNews(item)}"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/_10sdp"
         android:padding="@dimen/_10sdp"
         app:cardBackgroundColor="#f2f2f2"
+        android:onClick="@{() -> viewModel.onClickNews(item)}"
         app:cardCornerRadius="@dimen/_10sdp"
         app:cardElevation="@dimen/_15sdp">
 
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
             <ImageView
                 android:id="@+id/imgID"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_160sdp"
+                android:layout_height="@dimen/_450sdp"
                 android:adjustViewBounds="true"
                 android:scaleType="centerCrop"
+                android:src="@mipmap/ic_launcher"
                 app:setImage="@{item.urlToImage}"
                 android:contentDescription="@string/news" />
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:padding="@dimen/_16sdp">
 
@@ -68,8 +67,6 @@
                     android:id="@+id/detailsTextViewID"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="2"
                     android:text="@{item.description}"
                     android:textColor="#555" />
             </LinearLayout>

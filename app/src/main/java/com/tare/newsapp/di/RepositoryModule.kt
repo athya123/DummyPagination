@@ -4,7 +4,9 @@ import com.google.android.gms.ads.AdLoader
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.tare.newsapp.R
+import com.tare.newsapp.network.PagingSource
 import com.tare.newsapp.network.Services
+import com.tare.newsapp.pojo.entities.Article
 import com.tare.newsapp.ui.HomeRepository
 import com.tare.newsapp.utils.Constants
 import dagger.Module
@@ -25,15 +27,17 @@ object RepositoryModule {
 
     @Singleton
     @Provides
-    fun provideHomeRepository(
+    fun providePagingSource(
         services: Services,
-        constants: Constants,
-        remoteConfig: FirebaseRemoteConfig,
-        remoteConfigSettings: FirebaseRemoteConfigSettings,
-        adLoaderBuilder: AdLoader.Builder,
+    ): PagingSource {
+        return PagingSource(services)
+    }
+
+    @Singleton
+    @Provides
+    fun provideHomeRepository(
+        pagingSource: PagingSource,
     ): HomeRepository {
-        remoteConfig.setDefaultsAsync(R.xml.remote_config)
-        remoteConfig.setConfigSettingsAsync(remoteConfigSettings)
-        return HomeRepository(services, constants, adLoaderBuilder, remoteConfig)
+        return HomeRepository(pagingSource)
     }
 }
